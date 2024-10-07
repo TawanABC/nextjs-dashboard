@@ -1,7 +1,7 @@
 import AcmeLogo from '@/app/ui/acme-logo';
-import LoginForm from '@/app/ui/login-form';
-import Social from '../ui/social';
 import { BackButton } from '../ui/back-button';
+import RegisterForm from '../ui/register-form';
+
 export default function LoginPage() {
     return (
         <main className="flex items-center justify-center md:h-screen">
@@ -11,11 +11,10 @@ export default function LoginPage() {
                         <AcmeLogo />
                     </div>
                 </div>
-                <LoginForm />
+                <RegisterForm />
                 <BackButton
-                    href='/register'
-                    label="Don't have an account?" />
-                <Social />
+                    href='/login'
+                    label="already have an account?" />
             </div>
         </main>
     );

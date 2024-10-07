@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
+import bcrypt from 'bcrypt';
 
 export type State = {
     errors?: {
@@ -16,6 +17,62 @@ export type State = {
     };
     message?: string | null;
 };
+
+export type RegisterState = {
+    errors?: {
+        name?: string[];
+        email?: string[];
+        password?: string[];
+    };
+    message?: string | null;
+};
+
+const RegisterSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string().min(6)
+});
+const CreateAccount = RegisterSchema.omit({ id: true })
+
+export async function createAccount(prevState: RegisterState, formData: FormData) {
+    // Validate form using Zod
+    const validatedFields = CreateAccount.safeParse({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        password: formData.get('password')
+    });
+
+    // If form validation fails, return errors early. Otherwise, continue.
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Create Account.',
+        };
+    }
+
+    // Prepare data for insertion into the database
+    const { name, email, password } = validatedFields.data;
+    const salt = await bcrypt.genSalt(10); // 10 is the salt rounds, you can adjust
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Insert data into the database
+    try {
+        await sql`
+        INSERT INTO users (name, email, password)
+        VALUES (${name}, ${email}, ${hashedPassword})
+      `;
+    } catch (error) {
+        // If a database error occurs, return a more specific error.
+        return {
+            message: 'Database Error: Failed to Create Account.',
+        };
+    }
+
+    // Revalidate the cache for the invoices page and redirect the user.
+    revalidatePath('/login');
+    redirect('/login');
+}
 
 const FormSchema = z.object({
     id: z.string(),
@@ -107,7 +164,6 @@ export async function deleteInvoice(id: string) {
 
     revalidatePath('/dashboard/invoices');
 }
-
 
 
 // ...

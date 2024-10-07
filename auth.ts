@@ -1,10 +1,13 @@
 import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
 import { authConfig } from './auth.config';
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
+
+import Credentials from 'next-auth/providers/credentials';
+import GitHub from 'next-auth/providers/github';
+import Google from 'next-auth/providers/google';
 
 async function getUser(email: string): Promise<User | undefined> {
     try {
@@ -16,9 +19,17 @@ async function getUser(email: string): Promise<User | undefined> {
     }
 }
 
-export const { auth, signIn, signOut } = NextAuth({
+export const { handlers, signIn, signOut, auth } = NextAuth({
     ...authConfig,
     providers: [
+        Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        }),
+        GitHub({
+            clientId: process.env.GITHUB_CLIENT_ID,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        }),
         Credentials({
             async authorize(credentials) {
                 const parsedCredentials = z
