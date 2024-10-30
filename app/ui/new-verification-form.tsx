@@ -13,7 +13,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import React from 'react'
 import { verifyNewAccount } from '../lib/verification-actions';
 import { useSearchParams } from 'next/navigation';
-import { BarLoader } from 'react-spinners'
+// import { BarLoader } from 'react-spinners'
 
 
 export default function VerificationForm() {
@@ -41,7 +41,7 @@ export default function VerificationForm() {
             <h1 className={`${lusitana.className} mb-3 text-2xl`}>
                 Please verify your email
             </h1>
-            <BarLoader></BarLoader>
+            {/* <BarLoader></BarLoader> */}
             <br />
             <div id="customer-error" aria-live="polite" aria-atomic="true">
                 {errorMessage && (
