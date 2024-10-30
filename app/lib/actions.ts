@@ -8,6 +8,38 @@ import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcrypt';
+import { db } from '@vercel/postgres';
+import { getVerificationTokenByEmail } from '../data/verification-token';
+import { generateVerificationToken } from './tokens';
+import { sendVerificationEmail } from '@/lib/mail';
+import { User } from './definitions';
+
+export async function getUser(email: string): Promise<User | undefined> {
+    try {
+        const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+        return user.rows[0];
+    } catch (error) {
+        console.error('Failed to fetch user:', error);
+        throw new Error('Failed to fetch user.');
+    }
+}
+
+async function checkEmailExists(email: string): Promise<boolean> {
+    try {
+        // Run a query to check if the email exists
+        const result = await db.query(
+            'SELECT email FROM users WHERE email = $1 LIMIT 1',
+            [email]
+        );
+
+        // Check if any rows were returned
+        return result.rowCount > 0;
+    } catch (error) {
+        console.error('Error checking email:', error);
+        throw error;
+    }
+}
+
 
 export type State = {
     errors?: {
@@ -55,6 +87,18 @@ export async function createAccount(prevState: RegisterState, formData: FormData
     const { name, email, password } = validatedFields.data;
     const salt = await bcrypt.genSalt(10); // 10 is the salt rounds, you can adjust
     const hashedPassword = await bcrypt.hash(password, salt);
+    const existingUser = await checkEmailExists(email);
+    if (existingUser) {
+        return {
+            errors: {
+                name: [],
+                email: ['This email is already in use.'],
+                password: []
+            },
+            message: null,
+        };
+    }
+
 
     // Insert data into the database
     try {
@@ -68,6 +112,9 @@ export async function createAccount(prevState: RegisterState, formData: FormData
             message: 'Database Error: Failed to Create Account.',
         };
     }
+    const verifcationToken = await generateVerificationToken(email);
+    await sendVerificationEmail(verifcationToken.email, verifcationToken.token);
+
 
     // Revalidate the cache for the invoices page and redirect the user.
     revalidatePath('/login');
@@ -167,11 +214,18 @@ export async function deleteInvoice(id: string) {
 
 
 // ...
-
+const loginEmail = z.object({ email: z.string().email() })
 export async function authenticate(
     prevState: string | undefined,
     formData: FormData,
 ) {
+    const { email } = loginEmail.parse({ email: formData.get('email') });
+    const existingUser = await getUser(email);
+    if (!existingUser?.emailverified) {
+        // const verifcationToken = await generateVerificationToken(email);
+        // await sendVerificationEmail(verifcationToken.email, verifcationToken.token);
+        return 'Confirmation email sent!';
+    }
     try {
         await signIn('credentials', formData);
     } catch (error) {

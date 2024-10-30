@@ -87,6 +87,14 @@ export default function RegisterForm() {
                         </div>
                     </div>
                 </div>
+                <div id="customer-error" aria-live="polite" aria-atomic="true">
+                    {state.errors?.email &&
+                        state.errors.email.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                                {error}
+                            </p>
+                        ))}
+                </div>
                 <Button type="submit" className="mt-4 w-full">Sign up<ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" /></Button>
             </div>
         </form>

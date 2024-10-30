@@ -7,8 +7,23 @@ export type User = {
   name: string;
   email: string;
   password: string;
+  image: string;
+  emailverified: string;
 };
 
+export type PasswordResetToken = {
+  id: string;
+  email: string;
+  token: string;
+  expires: string;
+}
+
+export type VerifiedToken = {
+  id: string;
+  email: string;
+  token: string;
+  expires: string;
+}
 export type Customer = {
   id: string;
   name: string;

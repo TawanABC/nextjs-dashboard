@@ -7,9 +7,11 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
-import { Button } from './button';
+import { Button2 } from "@/components/ui/button"
 import { useActionState } from 'react';
 import { authenticate } from '@/app/lib/actions';
+import Link from 'next/link';
+import { Button } from './button';
 
 export default function LoginForm() {
   const [errorMessage, formAction, isPending] = useActionState(
@@ -63,7 +65,16 @@ export default function LoginForm() {
             </div>
           </div>
         </div>
-        <Button className="mt-4 w-full" aria-disabled={isPending}>
+
+        <Button2
+          size='sm'
+          variant='link'
+          asChild
+          className='px-0 font-normal'>
+          <Link href='auth/reset'>Forgot password?</Link>
+        </Button2>
+
+        <Button className="mt-4 w-full " aria-disabled={isPending}>
           Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
         </Button>
         <div className="flex h-8 items-end space-x-1">
