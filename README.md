@@ -1,2 +1,2 @@
-Individual Study II
+Individual Study III
 Computer Engineering, Chulalongkorn University
